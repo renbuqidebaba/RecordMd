@@ -6808,18 +6808,6 @@ func main() {
 
 
 
-### 奇妙交易easy
-
-**# 问题描述**
-
-奇妙的交易X国是一个很特殊的国家，在这个国家的货币只有 $V^0, V^1, V^2,..., V^n$ 种面值。只要你需要（有这么多钱），你可以让 $n$ 无限大。同时在这个国家有一个很有趣的拍卖场有一条奇怪的规矩：一次交易中，买卖双方只能对每种面值的货币使用不超过两次。
-
-比如，买一件价格 $W$ 为198的物品，$V = 10$ 的情况，买家可以使用2张 $100 \, (10^2)$ 元纸币，卖家则给出物品和2张 $1 \, (10^0)$ 元纸币。因为奇怪的规则，很多X国人都需要在这个拍卖场交易之前判断一下这个物品是否可以被交易成功。不过很多人并不擅长这种计算，这时候就要请出聪明的你。
-
-
-
-
-
 
 
 ### 完美整数easy
@@ -7088,8 +7076,6 @@ func main() {
 ### 有限制的走楼梯 mid（有条件的递归）
 
 > 如果没有限制条件就是简单的递归或者使用动态规划
-
-
 
 
 
@@ -7386,7 +7372,7 @@ func main() {
 
 
 
-### 加一操作 mid(字符串操作)
+### 加一操作 mid (字符串按位操作)
 
 > 体型其实都见过，从最后一位开始处理，字符串可以进行覆盖，但是不可以改变一位。
 
@@ -7515,17 +7501,53 @@ func main() {
 
 
 
-### 计算位置x到y的最小步数
+### 比较版本号 easy
 
 
 
+```go
+func solution(version1 string, version2 string) int {
+	// 将版本号按 '.' 分割成修订号的切片
+	ver1Parts := strings.Split(version1, ".")
+	ver2Parts := strings.Split(version2, ".")
+
+	// 同时遍历两个版本号的修订号切片
+	for i := 0; i < len(ver1Parts) && i < len(ver2Parts); i++ {
+		// 去除前导零后转换为整数进行比较
+		ver1Num, _ := strconv.Atoi(strings.TrimLeft(ver1Parts[i], "0"))
+		ver2Num, _ := strconv.Atoi(strings.TrimLeft(ver2Parts[i], "0"))
+
+		if ver1Num > ver2Num {
+			return 1
+		} else if ver1Num < ver2Num {
+			return -1
+		}
+	}
+
+	// 如果一直比较到其中一个版本号的修订号结束，而另一个还有剩余
+	if len(ver1Parts) > len(ver2Parts) {
+		for _, num := range ver1Parts[len(ver2Parts):] {
+			numInt, _ := strconv.Atoi(strings.TrimLeft(num, "0"))
+			if numInt > 0 {
+				return 1
+			}
+		}
+	} else if len(ver1Parts) < len(ver2Parts) {
+		for _, num := range ver2Parts[len(ver1Parts):] {
+			numInt, _ := strconv.Atoi(strings.TrimLeft(num, "0"))
+			if numInt > 0 {
+				return -1
+			}
+		}
+	}
+
+	return 0
+}
+```
 
 
-### 连续子串的和easy
 
-
-
-
+### 连续子串的和easy（暴力）
 
 ```go
 package main
@@ -7556,5 +7578,86 @@ func main() {
 	fmt.Println(solution(3, 3, sequence) == 3)
 }
 
+```
+
+
+
+### 数字乘积 easy （暴力）
+
+> 思路正确和上面那个连续子串的暴力思路一样，但是被下标的坑搞了好久。emmm恶心的题目
+
+```go
+package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func solution(n int, data []int) string {
+	// Edit your code here
+	currentMax := 0
+	x, y := 0, 0
+	for i := 0; i < n; i++ {
+		temp := 1
+		for j := i; j < n; j++ {
+			temp *= data[j]
+			if temp > currentMax {
+				currentMax = temp
+				x, y = i, j
+			}
+		}
+	}
+	str := ""
+	str = str + strconv.Itoa(x+1) + "," + strconv.Itoa(y+1)
+	return str
+}
+
+func main() {
+	// Add your test cases here
+	fmt.Println(solution(5, []int{1, 2, 4, 0, 8}) == "1,3")
+	fmt.Println(solution(7, []int{1, 2, 4, 8, 0, 256, 0}) == "6,6")
+}
+
+```
+
+
+
+
+
+### 猫鱼分干 mid
+
+> 读懂题目的意思，然后确定左右两边遍历的思路
+
+
+
+这是gpt版本
+
+```go
+func solution(n int, catsLevels []int) int {
+	// 创建一个切片用来存储每只猫分配的鱼干数量，初始值都为 1
+	fishCount := make([]int, n)
+	for i := 0; i < n; i++ {
+		fishCount[i] = 1
+	}
+	// 从左到右遍历，如果当前猫等级比左边猫高，分配的鱼干就比左边猫多
+	for i := 1; i < n; i++ {
+		if catsLevels[i] > catsLevels[i-1] {
+			fishCount[i] = fishCount[i-1] + 1
+		}
+	}
+	// 从右到左遍历，如果当前猫等级比右边猫高且当前分配的鱼干数量小于等于右边猫，就调整当前猫的鱼干数量
+	for i := n - 2; i >= 0; i-- {
+		if catsLevels[i] > catsLevels[i+1] && fishCount[i] <= fishCount[i+1] {
+			fishCount[i] = fishCount[i+1] + 1
+		}
+	}
+	// 计算总的鱼干数量
+	total := 0
+	for _, count := range fishCount {
+		total += count
+	}
+	return total
+}
 ```
 
